@@ -4,7 +4,6 @@ import 'package:progress_dialog/progress_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:toast/toast.dart';
 import 'package:http/http.dart' as http;
-import 'user.dart';
 
 class RegisterPage extends StatefulWidget {
   @override
@@ -12,15 +11,12 @@ class RegisterPage extends StatefulWidget {
 }
 
 class _RegisterPageState extends State<RegisterPage> {
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController _namecontroller = TextEditingController();
   final TextEditingController _emcontroller = TextEditingController();
   final TextEditingController _pscontroller = TextEditingController();
   final TextEditingController _phcontroller = TextEditingController();
 
-  String _email = "";
-  String _password = "";
-  String _name = "";
-  String _phone = "";
   bool _passwordVisible = false;
   bool _rememberMe = false;
 
@@ -29,108 +25,159 @@ class _RegisterPageState extends State<RegisterPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Registration'),
+        centerTitle: true,
       ),
       body: Container(
-          child: Padding(
-              padding: EdgeInsets.all(30.0),
-              child: SingleChildScrollView(
-                child: Column(
-                  children: [
-                    Image.asset(
-                      'assets/images/foodninjared.png',
-                      scale: 2,
-                    ),
-                    TextField(
-                        controller: _namecontroller,
-                        keyboardType: TextInputType.name,
-                        decoration: InputDecoration(
-                            labelText: 'Name', icon: Icon(Icons.person))),
-                    TextField(
-                        controller: _emcontroller,
-                        keyboardType: TextInputType.emailAddress,
-                        decoration: InputDecoration(
-                            labelText: 'Email', icon: Icon(Icons.email))),
-                    TextField(
-                        controller: _phcontroller,
-                        keyboardType: TextInputType.phone,
-                        decoration: InputDecoration(
-                            labelText: 'Mobile', icon: Icon(Icons.phone))),
-                    TextField(
-                      controller: _pscontroller,
-                      decoration: InputDecoration(
-                        labelText: 'Password',
-                        icon: Icon(Icons.lock),
-                        suffixIcon: IconButton(
-                          icon: Icon(
-                            // Based on passwordVisible state choose the icon
-                            _passwordVisible
-                                ? Icons.visibility
-                                : Icons.visibility_off,
-                            color: Theme.of(context).primaryColorDark,
-                          ),
-                          onPressed: () {
-                            // Update the state i.e. toogle the state of passwordVisible variablegithu
-                            setState(() {
-                              _passwordVisible = !_passwordVisible;
-                            });
-                          },
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: <Color>[Colors.red.shade50, Colors.white],
+          ),
+        ),
+        child: Padding(
+          padding: EdgeInsets.all(24.0),
+          child: SingleChildScrollView(
+            child: Card(
+              elevation: 8,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Padding(
+                padding: EdgeInsets.all(20),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    children: <Widget>[
+                      Image.asset(
+                        'assets/images/foodninjared.png',
+                        width: 110,
+                        height: 110,
+                      ),
+                      SizedBox(height: 8),
+                      Text(
+                        'Create Account',
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.red.shade700,
                         ),
                       ),
-                      obscureText: _passwordVisible,
-                    ),
-                    SizedBox(height: 10),
-                    Row(
-                      children: <Widget>[
-                        Checkbox(
-                          value: _rememberMe,
-                          onChanged: (bool value) {
-                            _onChange(value);
-                          },
+                      SizedBox(height: 18),
+                      TextFormField(
+                        controller: _namecontroller,
+                        keyboardType: TextInputType.name,
+                        decoration: _inputDecoration('Name', Icons.person),
+                        validator: _validateName,
+                      ),
+                      SizedBox(height: 12),
+                      TextFormField(
+                        controller: _emcontroller,
+                        keyboardType: TextInputType.emailAddress,
+                        decoration: _inputDecoration('Email', Icons.email),
+                        validator: _validateEmail,
+                      ),
+                      SizedBox(height: 12),
+                      TextFormField(
+                        controller: _phcontroller,
+                        keyboardType: TextInputType.phone,
+                        decoration: _inputDecoration('Mobile', Icons.phone),
+                        validator: _validatePhone,
+                      ),
+                      SizedBox(height: 12),
+                      TextFormField(
+                        controller: _pscontroller,
+                        decoration:
+                            _inputDecoration('Password', Icons.lock).copyWith(
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              _passwordVisible
+                                  ? Icons.visibility
+                                  : Icons.visibility_off,
+                            ),
+                            onPressed: () {
+                              setState(() {
+                                _passwordVisible = !_passwordVisible;
+                              });
+                            },
+                          ),
                         ),
-                        Text('Remember Me', style: TextStyle(fontSize: 16))
-                      ],
-                    ),
-                    SizedBox(height: 10),
-                    MaterialButton(
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20.0)),
-                      minWidth: 300,
-                      height: 50,
-                      child: Text('Register'),
-                      color: Colors.black,
-                      textColor: Colors.white,
-                      elevation: 15,
-                      onPressed: _onRegister,
-                    ),
-                    SizedBox(height: 10),
-                    GestureDetector(
+                        obscureText: !_passwordVisible,
+                        validator: _validatePassword,
+                      ),
+                      SizedBox(height: 8),
+                      CheckboxListTile(
+                        contentPadding: EdgeInsets.zero,
+                        value: _rememberMe,
+                        title: Text('Remember me'),
+                        controlAffinity: ListTileControlAffinity.leading,
+                        onChanged: (bool value) {
+                          _onChange(value ?? false);
+                        },
+                      ),
+                      SizedBox(height: 8),
+                      MaterialButton(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14.0),
+                        ),
+                        minWidth: double.infinity,
+                        height: 48,
+                        child: Text('Register'),
+                        color: Colors.red.shade700,
+                        textColor: Colors.white,
+                        elevation: 0,
+                        onPressed: _onRegister,
+                      ),
+                      SizedBox(height: 12),
+                      InkWell(
                         onTap: _onLogin,
-                        child: Text('Already register',
-                            style: TextStyle(fontSize: 16))),
-                  ],
+                        child: Text(
+                          'Already have an account? Login',
+                          style: TextStyle(
+                            fontSize: 15,
+                            color: Colors.red.shade700,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ))),
+              ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 
   void _onRegister() async {
-    _name = _namecontroller.text;
-    _email = _emcontroller.text;
-    _password = _pscontroller.text;
-    _phone = _phcontroller.text;
+    if (!_formKey.currentState.validate()) {
+      return;
+    }
+
+    final String name = _namecontroller.text.trim();
+    final String email = _emcontroller.text.trim();
+    final String password = _pscontroller.text;
+    final String phone = _phcontroller.text.trim();
+
     ProgressDialog pr = new ProgressDialog(context,
         type: ProgressDialogType.Normal, isDismissible: false);
     pr.style(message: "Registration...");
     await pr.show();
-    http.post("https://slumberjer.com/foodninjav2/php/register_user.php",
+
+    try {
+      final res = await http.post(
+        "https://slumberjer.com/foodninjav2/php/register_user.php",
         body: {
-          "name": _name,
-          "email": _email,
-          "password": _password,
-          "phone": _phone,
-        }).then((res) {
-          print(res.body);
-      if (res.body == "succes") {
+          "name": name,
+          "email": email,
+          "password": password,
+          "phone": phone,
+        },
+      );
+      final String body = res.body.toLowerCase();
+      if (body.contains("success") || body.contains("succes")) {
         Toast.show(
           "Registration success",
           context,
@@ -138,10 +185,14 @@ class _RegisterPageState extends State<RegisterPage> {
           gravity: Toast.TOP,
         );
         if (_rememberMe) {
-          savepref();
+          await _savePref();
         }
-        Navigator.pushReplacement(context,
-            MaterialPageRoute(builder: (BuildContext context) => LoginPage()));
+        if (mounted) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (BuildContext context) => LoginPage()),
+          );
+        }
       } else {
         Toast.show(
           "Registration failed",
@@ -150,10 +201,16 @@ class _RegisterPageState extends State<RegisterPage> {
           gravity: Toast.TOP,
         );
       }
-    }).catchError((err) {
-      print(err);
-    });
-    await pr.hide();
+    } catch (err) {
+      Toast.show(
+        "Network error. Please try again.",
+        context,
+        duration: Toast.LENGTH_LONG,
+        gravity: Toast.TOP,
+      );
+    } finally {
+      await pr.hide();
+    }
   }
 
   void _onLogin() {
@@ -167,12 +224,75 @@ class _RegisterPageState extends State<RegisterPage> {
     });
   }
 
-  void savepref() async {
+  Future<void> _savePref() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    _email = _emcontroller.text;
-    _password = _pscontroller.text;
-    await prefs.setString('email', _email);
-    await prefs.setString('password', _password);
+    final String email = _emcontroller.text.trim();
+    final String password = _pscontroller.text;
+
+    await prefs.setString('email', email);
+    await prefs.setString('password', password);
     await prefs.setBool('rememberme', true);
+  }
+
+  InputDecoration _inputDecoration(String label, IconData icon) {
+    return InputDecoration(
+      labelText: label,
+      prefixIcon: Icon(icon),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+    );
+  }
+
+  String _validateName(String value) {
+    final String name = value.trim();
+    if (name.isEmpty) {
+      return 'Please enter name';
+    }
+    if (name.length < 3) {
+      return 'Name is too short';
+    }
+    return null;
+  }
+
+  String _validateEmail(String value) {
+    final String email = value.trim();
+    if (email.isEmpty) {
+      return 'Please enter email';
+    }
+    if (!email.contains('@') || !email.contains('.')) {
+      return 'Please enter valid email';
+    }
+    return null;
+  }
+
+  String _validatePhone(String value) {
+    final String phone = value.trim();
+    if (phone.isEmpty) {
+      return 'Please enter mobile number';
+    }
+    if (phone.length < 9) {
+      return 'Please enter valid mobile number';
+    }
+    return null;
+  }
+
+  String _validatePassword(String value) {
+    if (value.isEmpty) {
+      return 'Please enter password';
+    }
+    if (value.length < 6) {
+      return 'Minimum 6 characters';
+    }
+    return null;
+  }
+
+  @override
+  void dispose() {
+    _namecontroller.dispose();
+    _emcontroller.dispose();
+    _pscontroller.dispose();
+    _phcontroller.dispose();
+    super.dispose();
   }
 }

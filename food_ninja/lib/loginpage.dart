@@ -10,96 +10,169 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController _emcontroller = TextEditingController();
-  String _email = "";
   final TextEditingController _pscontroller = TextEditingController();
-  String _pass = "";
   bool _rememberMe = false;
-  SharedPreferences prefs;
+  bool _obscurePassword = true;
+  SharedPreferences _prefs;
 
   @override
   void initState() {
-    loadpref();
     super.initState();
+    _loadPref();
   }
 
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
-        onWillPop: _onBackPressAppBar,
-        child: Scaffold(
-            appBar: AppBar(
-              title: Text('Login'),
+      onWillPop: _onBackPressAppBar,
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text('Login'),
+          centerTitle: true,
+        ),
+        body: Container(
+          padding: EdgeInsets.all(24.0),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: <Color>[Colors.red.shade50, Colors.white],
             ),
-            //resizeToAvoidBottomPadding: false,
-            body: new Container(
-              padding: EdgeInsets.all(30.0),
-              child: SingleChildScrollView(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>[
-                    Image.asset(
-                      'assets/images/foodninjared.png',
-                      scale: 2,
-                    ),
-                    TextField(
-                        controller: _emcontroller,
-                        keyboardType: TextInputType.emailAddress,
-                        decoration: InputDecoration(
-                            labelText: 'Email', icon: Icon(Icons.email))),
-                    TextField(
-                      controller: _pscontroller,
-                      decoration: InputDecoration(
-                          labelText: 'Password', icon: Icon(Icons.lock)),
-                      obscureText: true,
-                    ),
-                    SizedBox(
-                      height: 10,
-                    ),
-                    MaterialButton(
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20.0)),
-                      minWidth: 300,
-                      height: 50,
-                      child: Text('Login'),
-                      color: Colors.black,
-                      textColor: Colors.white,
-                      elevation: 15,
-                      onPressed: _onPress,
-                    ),
-                    SizedBox(
-                      height: 10,
-                    ),
-                    Row(
+          ),
+          child: Center(
+            child: SingleChildScrollView(
+              child: Card(
+                elevation: 8,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Padding(
+                  padding: EdgeInsets.all(20),
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
                       children: <Widget>[
-                        Checkbox(
+                        Image.asset(
+                          'assets/images/foodninjared.png',
+                          width: 120,
+                          height: 120,
+                        ),
+                        SizedBox(height: 8),
+                        Text(
+                          'Welcome Back',
+                          style: TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.red.shade700,
+                          ),
+                        ),
+                        SizedBox(height: 18),
+                        TextFormField(
+                          controller: _emcontroller,
+                          keyboardType: TextInputType.emailAddress,
+                          decoration: InputDecoration(
+                            labelText: 'Email',
+                            prefixIcon: Icon(Icons.email),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          validator: _validateEmail,
+                        ),
+                        SizedBox(height: 12),
+                        TextFormField(
+                          controller: _pscontroller,
+                          obscureText: _obscurePassword,
+                          decoration: InputDecoration(
+                            labelText: 'Password',
+                            prefixIcon: Icon(Icons.lock),
+                            suffixIcon: IconButton(
+                              icon: Icon(
+                                _obscurePassword
+                                    ? Icons.visibility_off
+                                    : Icons.visibility,
+                              ),
+                              onPressed: () {
+                                setState(() {
+                                  _obscurePassword = !_obscurePassword;
+                                });
+                              },
+                            ),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          validator: _validatePassword,
+                        ),
+                        SizedBox(height: 8),
+                        CheckboxListTile(
+                          contentPadding: EdgeInsets.zero,
                           value: _rememberMe,
+                          title: Text('Remember me'),
+                          controlAffinity: ListTileControlAffinity.leading,
                           onChanged: (bool value) {
-                            _onChange(value);
+                            _onChange(value ?? false);
                           },
                         ),
-                        Text('Remember Me', style: TextStyle(fontSize: 16))
+                        SizedBox(height: 8),
+                        MaterialButton(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14.0),
+                          ),
+                          minWidth: double.infinity,
+                          height: 48,
+                          child: Text('Login'),
+                          color: Colors.red.shade700,
+                          textColor: Colors.white,
+                          elevation: 0,
+                          onPressed: _onPress,
+                        ),
+                        SizedBox(height: 12),
+                        InkWell(
+                          onTap: _onRegister,
+                          child: Text(
+                            'Create new account',
+                            style: TextStyle(
+                              fontSize: 15,
+                              color: Colors.red.shade700,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                        SizedBox(height: 10),
+                        InkWell(
+                          onTap: _onForgot,
+                          child: Text(
+                            'Forgot password?',
+                            style: TextStyle(fontSize: 14),
+                          ),
+                        ),
                       ],
                     ),
-                    GestureDetector(
-                        onTap: _onRegister,
-                        child: Text('Register New Account',
-                            style: TextStyle(fontSize: 16))),
-                    SizedBox(
-                      height: 10,
-                    ),
-                    GestureDetector(
-                        onTap: _onForgot,
-                        child: Text('Forgot Account',
-                            style: TextStyle(fontSize: 16))),
-                  ],
+                  ),
                 ),
               ),
-            )));
+            ),
+          ),
+        ),
+      ),
+    );
   }
 
   void _onPress() {
-    print('Press');
+    if (!_formKey.currentState.validate()) {
+      return;
+    }
+    _savePref(_rememberMe);
+    Toast.show(
+      "Login success (demo mode)",
+      context,
+      duration: Toast.LENGTH_LONG,
+      gravity: Toast.BOTTOM,
+    );
   }
 
   void _onRegister() {
@@ -108,79 +181,78 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   void _onForgot() {
-    print('Forgot');
+    Toast.show(
+      "Please contact admin to reset password",
+      context,
+      duration: Toast.LENGTH_LONG,
+      gravity: Toast.BOTTOM,
+    );
   }
 
   void _onChange(bool value) {
     setState(() {
       _rememberMe = value;
-      savepref(value);
     });
   }
 
-  void loadpref() async {
-    prefs = await SharedPreferences.getInstance();
-    _email = (prefs.getString('email')) ?? '';
-    _pass = (prefs.getString('password')) ?? '';
-    _rememberMe = (prefs.getBool('rememberme')) ?? false;
-    if (_email.isNotEmpty) {
+  Future<void> _loadPref() async {
+    _prefs = await SharedPreferences.getInstance();
+    final String email = (_prefs.getString('email')) ?? '';
+    final String pass = (_prefs.getString('password')) ?? '';
+    final bool remember = (_prefs.getBool('rememberme')) ?? false;
+    if (email.isNotEmpty || pass.isNotEmpty) {
       setState(() {
-        _emcontroller.text = _email;
-        _pscontroller.text = _pass;
-        _rememberMe = _rememberMe;
+        _emcontroller.text = email;
+        _pscontroller.text = pass;
+        _rememberMe = remember;
       });
     }
   }
 
-  void savepref(bool value) async {
-    prefs = await SharedPreferences.getInstance();
-    _email = _emcontroller.text;
-    _pass = _pscontroller.text;
-
+  Future<void> _savePref(bool value) async {
+    _prefs = _prefs ?? await SharedPreferences.getInstance();
     if (value) {
-      if (_email.length < 5 && _pass.length < 3) {
-        print("EMAIL/PASSWORD EMPTY");
-        _rememberMe = false;
-        Toast.show(
-          "Email/password empty!!!",
-          context,
-          duration: Toast.LENGTH_LONG,
-          gravity: Toast.BOTTOM,
-        );
-        return;
-      } else {
-        await prefs.setString('email', _email);
-        await prefs.setString('password', _pass);
-        await prefs.setBool('rememberme', value);
-        Toast.show(
-          "Preferences saved",
-          context,
-          duration: Toast.LENGTH_LONG,
-          gravity: Toast.BOTTOM,
-        );
-        print("SUCCESS");
-      }
+      await _prefs.setString('email', _emcontroller.text.trim());
+      await _prefs.setString('password', _pscontroller.text);
+      await _prefs.setBool('rememberme', true);
+      return;
     } else {
-      await prefs.setString('email', '');
-      await prefs.setString('password', '');
-      await prefs.setBool('rememberme', false);
-      setState(() {
-        _emcontroller.text = "";
-        _pscontroller.text = "";
-        _rememberMe = false;
-      });
-      Toast.show(
-          "Preferences removed",
-          context,
-          duration: Toast.LENGTH_LONG,
-          gravity: Toast.BOTTOM,
-        );
+      await _prefs.setString('email', '');
+      await _prefs.setString('password', '');
+      await _prefs.setBool('rememberme', false);
     }
   }
 
   Future<bool> _onBackPressAppBar() async {
     SystemNavigator.pop();
-    print('Backpress');
     return Future.value(false);
+  }
+
+  String _validateEmail(String value) {
+    final String email = value.trim();
+    if (email.isEmpty) {
+      return 'Please enter email';
+    }
+    if (!email.contains('@') || !email.contains('.')) {
+      return 'Please enter valid email';
+    }
+    return null;
+  }
+
+  String _validatePassword(String value) {
+    if (value.isEmpty) {
+      return 'Please enter password';
+    }
+    if (value.length < 6) {
+      return 'Minimum 6 characters';
+    }
+    return null;
+  }
+
+  @override
+  void dispose() {
+    _emcontroller.dispose();
+    _pscontroller.dispose();
+    super.dispose();
   }
 }
