@@ -1,11 +1,11 @@
 # FlutterA201
 
-Repository ini berisi 2 project Flutter:
+This repository contains 2 Flutter projects:
 
-- `food_ninja`: app utama (splash, login, register, remember me)
-- `food_ninja_fb`: project Flutter template/eksperimen
+- `food_ninja`: main app (splash, login, register, remember me)
+- `food_ninja_fb`: basic Flutter template/experiment project
 
-## Struktur
+## Structure
 
 ```text
 FlutterA201/
@@ -13,33 +13,33 @@ FlutterA201/
   food_ninja_fb/
 ```
 
-## Cara Jalanin
+## How To Run
 
-1. Masuk ke folder project:
+1. Go to one project folder:
 
 ```bash
 cd food_ninja
 ```
 
-atau
+or
 
 ```bash
 cd food_ninja_fb
 ```
 
-2. Install dependency:
+2. Install dependencies:
 
 ```bash
 flutter pub get
 ```
 
-3. Run app:
+3. Run the app:
 
 ```bash
 flutter run
 ```
 
-## Catatan
+## Notes
 
-- README detail untuk app utama ada di `food_ninja/README.md`.
-- README detail untuk project `food_ninja_fb` ada di `food_ninja_fb/README.md`.
+- Detailed README for the main app: `food_ninja/README.md`
+- Detailed README for template project: `food_ninja_fb/README.md`
